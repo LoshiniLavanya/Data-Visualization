@@ -1,0 +1,702 @@
+---
+title: "MIDTERM"
+output: html_document
+---
+Name: Loshini Lavanya Krishnakumar
+NUID:001052283
+Course:IE6600
+Section:04
+---
+
+```{r}
+library(dplyr)
+temp<-farmers_market_info
+#Aplhabetical sort of State,County,City
+Market<-temp[order(temp$State,temp$County),]
+#the states present
+states_present<-as.data.frame(unique(temp$State))
+Ordered_states_present<-as.data.frame(states_present[order(states_present),])
+colnames(Ordered_states_present)<-"State"
+```
+#Question 1
+```{r}
+library(ggplot2)
+library(usmap)
+library(plotly)
+library(ggplot2)
+library(png)
+library(grid)
+library(ggimage)
+library(dplyr)
+Market_df<-as.data.frame(Market)
+Countstate<-count(Market_df,var=State)
+Max_state<-Countstate[order(-Countstate$n),]
+Max_state$StateABB<-c("CA","NY","MI","IL","OH","MA","WI","PA","FL","VA","MO","NC","TX","IA","MN","IN","WA","GA","MD","CO","OR","CT","NJ","AL","KY","TN","SC","KS","AR","NE","HI","NH","ME","WV","AZ","VT","MS","LA","OK","NM","MT","ID","ND","DC","WY","UT","PR","SD","NV","AK","DE","RI","VI")
+#market_path<-"images/market.jpeg.png"
+#marketimg<-readPNG(image_path,native = TRUE,info = TRUE)
+#image_path<-"images/market.jpeg.png"
+#img<-readPNG(image_path,native = TRUE,info = TRUE)
+
+
+plot_ly(Max_state,z=Max_state$n,locations=Max_state$StateABB,text=paste0(Max_state$StateABB,'<br>Markets:',Max_state$n),type="choropleth",locationmode="USA-states",color='grey27')%>% layout(geo= list(scope="usa")) 
+
+```
+
+```{r}
+StateNames<-Max_state[1:15,1]
+StateAbb<-Max_state[1:15,3]
+markdot<-Max_state[1:15,2]
+values<-c(20,30,40,50,60,70,80,90,100,200,300,400,500,600,700)
+New_df<-data.frame(StateAbb,StateNames,markdot,values)
+New_df$statecolor<-c("California","New York","Michigan","Illinois","Ohio","Massachusetts","Wisconsin","Pennsylvania","Florida","Virginia","Missouri","North Carolina","Texas","Iowa","Minnesota")
+ggplot(New_df,aes(x=reorder(StateABB,-New_df$n),y=New_df$n,fill=statecolor))+geom_bar(stat="identity")+xlab("States")+ylab("Number of Markets")+ggtitle("States With More than 200 Markets")
+plot_ly(New_df,z=New_df$n,locations=New_df$StateABB,text=paste0(New_df$StateABB,'<br>Markets:',New_df$n),type="choropleth",locationmode="USA-states",color='firebrick3')%>% layout(geo= list(scope="usa"))
+
+```
+
+```{r}
+StateNames2<-Max_state[16:30,1]
+StateAbb2<-Max_state[16:30,3]
+markdot2<-Max_state[16:30,2]
+New_df2<-data.frame(StateAbb2,StateNames2,markdot2)
+plot_ly(New_df2,z=New_df2$n,locations=New_df2$StateABB,text=paste0(New_df2$StateABB,'<br>Markets:',New_df2$n),type="choropleth",locationmode="USA-states",colors="Purples")%>% layout(geo= list(scope="usa"))
+
+```
+
+```{r}
+StateNames3<-Max_state[31:52,1]
+StateAbb3<-Max_state[31:52,3]
+markdot3<-Max_state[31:52,2]
+New_df3<-data.frame(StateAbb3,StateNames3,markdot3)
+plot_ly(New_df3,z=New_df3$n,locations=New_df3$StateABB,text=paste0(New_df3$StateABB,'<br>Markets:',New_df3$n),type="choropleth",locationmode="USA-states",colors="Greens")%>% layout(geo= list(scope="usa"))
+                                                                                                                                                                                         
+```
+
+#QUESTION 2
+```{r}
+
+library(lubridate)
+library(dplyr)
+library(timelineS)
+library(ggplot2)
+# SEASONS DATA CLEANING
+Market_df<-as.data.frame(Market)
+StatesPresent<-select(Market_df,State)
+Seasons_market<-select(Market_df,State,Season1Date,Season2Date,Season3Date,Season4Date)
+```
+```{r}
+
+Seasons_market$Season1Date<-gsub('January','01/00/0000',Seasons_market$Season1Date)
+Seasons_market$Season1Date<-gsub('Febuary','02/00/0000',Seasons_market$Season1Date)
+Seasons_market$Season1Date<-gsub('March','03/00/0000',Seasons_market$Season1Date)
+Seasons_market$Season1Date<-gsub('April','04/00/0000',Seasons_market$Season1Date)
+Seasons_market$Season2Date<-gsub('April','04/00/0000',Seasons_market$Season2Date)
+Seasons_market$Season1Date<-gsub('May','05/00/0000',Seasons_market$Season1Date)
+Seasons_market$Season1Date<-gsub('June','06/00/0000',Seasons_market$Season1Date)
+Seasons_market$Season1Date<-gsub('July','07/00/0000',Seasons_market$Season1Date)
+Seasons_market$Season1Date<-gsub('August','08/00/0000',Seasons_market$Season1Date)
+Seasons_market$Season1Date<-gsub('September','09/00/0000',Seasons_market$Season1Date)
+Seasons_market$Season1Date<-gsub('October','10/00/0000',Seasons_market$Season1Date)
+Seasons_market$Season1Date<-gsub('November','11/00/0000',Seasons_market$Season1Date)
+Seasons_market$Season1Date<-gsub('December','12/00/0000',Seasons_market$Season1Date)
+
+
+library(stringr)
+Season1_data<-str_split_fixed(Seasons_market$Season1Date, "to", 2)
+colnames(Season1_data)<-c("Season1_start_date","Season1_end_date")
+Season2_data<-str_split_fixed(Seasons_market$Season2Date, "to", 2)
+colnames(Season2_data)<-c("Season2_start_date","Season2_end_date")
+Season3_data<-str_split_fixed(Seasons_market$Season3Date, "to", 2)
+colnames(Season3_data)<-c("Season3_start_date","Season3_end_date")
+Season4_data<-str_split_fixed(Seasons_market$Season1Date, "to", 2)
+colnames(Season4_data)<-c("Season4_start_date","Season4_end_date")
+Seasons_data<-cbind(StatesPresent,Season1_data,Season2_data,Season3_data,Season4_data)
+
+Seasons_data$Season1_start_date<-format(as.Date(Seasons_data$Season1_start_date,format="%m/%d/%Y"),"%m")
+Seasons_data$Season1_end_date<-format(as.Date(Seasons_data$Season1_end_date,format="%m/%d/%Y"),"%m")
+Seasons_data$Season2_start_date<-format(as.Date(Seasons_data$Season2_start_date,format="%m/%d/%Y"),"%m")
+Seasons_data$Season2_end_date<-format(as.Date(Seasons_data$Season2_end_date,format="%m/%d/%Y"),"%m")
+Seasons_data$Season3_start_date<-format(as.Date(Seasons_data$Season3_start_date,format="%m/%d/%Y"),"%m")
+Seasons_data$Season3_end_date<-format(as.Date(Seasons_data$Season3_end_date,format="%m/%d/%Y"),"%m")
+Seasons_data$Season4_start_date<-format(as.Date(Seasons_data$Season4_start_date,format="%m/%d/%Y"),"%m")
+Seasons_data$Season4_end_date<-format(as.Date(Seasons_data$Season4_end_date,format="%m/%d/%Y"),"%m")
+Seasons_data[is.na(Seasons_data)]<-0
+
+#FINAL TABLE
+ALLSEASONS <- data.frame(Reduce(rbind,apply(Seasons_data,1,function(x){if(any(x==0)){NULL}else{x}})))
+
+```
+```{r}
+library(cowplot)
+#SEASON1startplot
+SEASON1startplot<-ggplot(ALLSEASONSPLOT,aes(y=Season1_start_date,x=reorder(State,-Season1_start_date)))+geom_point()+geom_line(aes(group=State))+coord_flip()+scale_y_discrete(breaks=c("01","03","04","05","06","07"),labels=c("Jan","Mar","Apr","May","June","July"))+xlab("States")+ylab("Start Month")+ggtitle("Season1 Start Duration")
+#SEASON1endplot
+SEASON1endplot<-ggplot(ALLSEASONSPLOT,aes(y=Season1_end_date,x=reorder(State,-Season1_end_date,fill=)))+geom_point()+geom_line(aes(group=State))+coord_flip()+scale_y_discrete(breaks=c("02","03","04","05","06","07","08","09","10","12"),labels=c("Feb","Mar","Apr","May","June","July","Aug","Sept","Oct","Dec"))+xlab("States")+ylab("End Month")+ggtitle("Season1 End Duration")
+Season1plot<-plot_grid(SEASON1startplot,SEASON1endplot,labels="AUTO")
+
+```
+```{r}
+#SEASON2startplot
+SEASON2startplot<-ggplot(ALLSEASONSPLOT,aes(y=Season2_start_date,x=reorder(State,-Season2_start_date)))+geom_point()+geom_line(aes(group=State))+coord_flip()+scale_y_discrete(breaks=c("01","03","04","05","06","07","09","11"),labels=c("Jan","Mar","Apr","May","June","July","Sept","Nov"))+xlab("States")+ylab("Start Month")+ggtitle("Season2 Start Duration")
+#SEASON2endplot
+SEASON2endplot<-ggplot(ALLSEASONSPLOT,aes(y=Season2_end_date,x=reorder(State,-Season2_end_date,fill=)))+geom_point()+geom_line(aes(group=State))+coord_flip()+scale_y_discrete(breaks=c("05","06","08","09","10","11","12"),labels=c("May","June","Aug","Sept","Oct","Nov","Dec"))+xlab("States")+ylab("End Month")+ggtitle("Season2 End Duration")
+Season2plot<-plot_grid(SEASON2startplot,SEASON2endplot,labels="AUTO")
+
+```
+```{r}
+#SEASON3startplot
+SEASON3startplot<-ggplot(ALLSEASONSPLOT,aes(y=Season3_start_date,x=reorder(State,-Season3_start_date)))+geom_point()+geom_line(aes(group=State))+coord_flip()+scale_y_discrete(breaks=c("01","03","07","08","09","10","11","12"),labels=c("Jan","Mar","July","Aug","Sept","Oct","Nov","Dec"))+xlab("States")+ylab("Start Month")+ggtitle("Season3 Start Duration")
+#SEASON3endplot
+SEASON3endplot<-ggplot(ALLSEASONSPLOT,aes(y=Season3_end_date,x=reorder(State,-Season3_end_date,fill=)))+geom_point()+geom_line(aes(group=State))+coord_flip()+scale_y_discrete(breaks=c("03","04","05","09","10","11","12"),labels=c("Mar","Apr","May","Sept","Oct","Nov","Dec"))+xlab("States")+ylab("End Month")+ggtitle("Season3 End Duration")
+Season3plot<-plot_grid(SEASON3startplot,SEASON3endplot,labels="AUTO")
+```
+```{r}
+#SEASON4startplot
+SEASON4startplot<-ggplot(ALLSEASONSPLOT,aes(y=Season4_start_date,x=reorder(State,-Season4_start_date)))+geom_point()+geom_line(aes(group=State))+coord_flip()+scale_y_discrete(breaks=c("01","03","04","05","06","07"),labels=c("Jan","Mar","Apr","May","June","July"))+xlab("States")+ylab("Start Month")+ggtitle("Season4 Start Duration")
+#SEASON4endplot
+SEASON4endplot<-ggplot(ALLSEASONSPLOT,aes(y=Season4_end_date,x=reorder(State,-Season4_end_date,fill=)))+geom_point()+geom_line(aes(group=State))+coord_flip()+scale_y_discrete(breaks=c("02","03","04","05","06","07","08","09","10","12"),labels=c("Feb","Mar","Apr","May","June","July","Aug","Sept","Oct","Dec"))+xlab("States")+ylab("End Month")+ggtitle("Season4 End Duration")
+Season4plot<-plot_grid(SEASON4startplot,SEASON4endplot,labels="AUTO")
+Seasons12<-plot_grid(Season1plot,Season2plot,nrow=2)
+Seasons34<-plot_grid(Season3plot,Season4plot,nrow=2)
+plot(Seasons34)
+
+```
+```{r}
+SEASON1complete1<-ALLSEASONS[,1:2]
+colnames(SEASON1complete1)<-c("State","Season1Date")
+SEASON1complete2<-ALLSEASONS[,c(1,3)]
+colnames(SEASON1complete2)<-c("State","Season1Date")
+SEASON1complete<-rbind(SEASON1complete1,SEASON1complete2)
+SEASON1COMPLETEplot<-ggplot(SEASON1complete,aes(y=Season1Date,x=reorder(State,-Season1Date)))+geom_point()+geom_line(aes(group=State))+coord_flip()+scale_y_discrete(breaks=c("01","02","03","04","05","06","07","08","09","11","10","12"),labels=c("Jan","Feb","Mar","Apr","May","June","July","Aug","Sept","Oct","Nov","Dec"))+xlab("States")+ylab("Month Duration")+ggtitle("Season1 Complete Duration")
+plot(SEASON1COMPLETEplot)                            
+
+```
+#Question 3
+```{r}
+library(reshape2)
+library(plyr)
+library(data.table)
+library(dplyr)
+
+#CLEANING PRODUCTS DATA
+Statespresent<-select(Market_df,State)
+Products_state<-select(Market_df,Organic,Bakedgoods,Cheese,Crafts,Flowers,Eggs,Seafood,Herbs,Vegetables,Honey,Jams,Maple,Meat,Nursery,Nuts,Plants,Poultry,Prepared,Soap,Trees,Wine,Coffee,Beans,Fruits,Grains,Juices,Mushrooms,PetFood,Tofu,WildHarvested)
+Products_state[is.na(Products_state)] <- 0
+Products_state<-data.frame(lapply(Products_state,function(x){gsub("N","0",x)}))
+Products_state<-data.frame(lapply(Products_state,function(x){gsub("-","0",x)}))
+Products_state<-data.frame(lapply(Products_state,function(x){gsub("Y","1",x)}))
+All_Products<-cbind(Statespresent,Products_state)
+All_Products<-data.table(All_Products)
+
+#EACH PRODUCT COUNT
+Org_count<-ddply(All_Products,.(All_Products$State,All_Products$Organic),nrow)
+colnames(Org_count)<-c("State","Y/N","OrganicCount")
+ORGANIC_count<-Org_count[order(Org_count$State),]
+ORGANIC_count <- ORGANIC_count%>% filter(ORGANIC_count$`Y/N` != 0)
+Bakedgoods_count<-ddply(All_Products,.(All_Products$State,All_Products$Bakedgoods),nrow)
+colnames(Bakedgoods_count)<-c("State","Y/N","BakedCount")
+BAKED_count<-Bakedgoods_count[order(Bakedgoods_count$State),]
+BAKED_count<-BAKED_count %>% filter(BAKED_count$`Y/N` != 0)
+Cheese_count<-ddply(All_Products,.(All_Products$State,All_Products$Cheese),nrow)
+colnames(Cheese_count)<-c("State","Y/N","CheeseCount")
+CHEESE_count<-Cheese_count[order(Cheese_count$State),]
+CHEESE_count<-CHEESE_count%>% filter(CHEESE_count$`Y/N` != 0)
+Crafts_count<-ddply(All_Products,.(All_Products$State,All_Products$Crafts),nrow)
+colnames(Crafts_count)<-c("State","Y/N","CraftsCount")
+CRAFTS_count<-Crafts_count[order(Crafts_count$State),]
+CRAFTS_count<-CRAFTS_count%>% filter(CRAFTS_count$`Y/N` != 0)
+Flowers_count<-ddply(All_Products,.(All_Products$State,All_Products$Flowers),nrow)
+colnames(Flowers_count)<-c("State","Y/N","FlowersCount")
+FLOWERS_count<-Flowers_count[order(Flowers_count$State),]
+FLOWERS_count<-FLOWERS_count%>% filter(FLOWERS_count$`Y/N` != 0)
+Eggs_count<-ddply(All_Products,.(All_Products$State,All_Products$Eggs),nrow)
+colnames(Eggs_count)<-c("State","Y/N","EggsCount")
+EGGS_count<-Eggs_count[order(Eggs_count$State),]
+EGGS_count<-EGGS_count%>% filter(EGGS_count$`Y/N` != 0)
+Seafood_count<-ddply(All_Products,.(All_Products$State,All_Products$Seafood),nrow)
+colnames(Seafood_count)<-c("State","Y/N","SeafoodCount")
+SEAFOOD_count<-Seafood_count[order(Seafood_count$State),]
+SEAFOOD_count<-SEAFOOD_count%>% filter(SEAFOOD_count$`Y/N` != 0)
+Herbs_count<-ddply(All_Products,.(All_Products$State,All_Products$Herbs),nrow)
+colnames(Herbs_count)<-c("State","Y/N","HerbsCount")
+HERBS_count<-Herbs_count[order(Herbs_count$State),]
+HERBS_count<-HERBS_count%>% filter(HERBS_count$`Y/N` != 0)
+Vegs_count<-ddply(All_Products,.(All_Products$State,All_Products$Vegetables),nrow)
+colnames(Vegs_count)<-c("State","Y/N","VegCount")
+VEGS_count<-Vegs_count[order(Vegs_count$State),]
+VEGS_count<-VEGS_count%>% filter(VEGS_count$`Y/N` != 0)
+Honey_count<-ddply(All_Products,.(All_Products$State,All_Products$Honey),nrow)
+colnames(Honey_count)<-c("State","Y/N","HoneyCount")
+HONEY_count<-Honey_count[order(Honey_count$State),]
+HONEY_count<-HONEY_count%>% filter(HONEY_count$`Y/N` != 0)
+Jam_count<-ddply(All_Products,.(All_Products$State,All_Products$Jams),nrow)
+colnames(Jam_count)<-c("State","Y/N","JamCount")
+JAM_count<-Jam_count[order(Jam_count$State),]
+JAM_count<-JAM_count%>% filter(JAM_count$`Y/N` != 0)
+Maple_count<-ddply(All_Products,.(All_Products$State,All_Products$Maple),nrow)
+colnames(Maple_count)<-c("State","Y/N","MapleCount")
+MAPLE_count<-Maple_count[order(Maple_count$State),]
+MAPLE_count<-MAPLE_count%>% filter(MAPLE_count$`Y/N` != 0)
+Meat_count<-ddply(All_Products,.(All_Products$State,All_Products$Meat),nrow)
+colnames(Meat_count)<-c("State","Y/N","MeatCount")
+MEAT_count<-Meat_count[order(Meat_count$State),]
+MEAT_count<-MEAT_count%>% filter(MEAT_count$`Y/N` != 0)
+Nursery_count<-ddply(All_Products,.(All_Products$State,All_Products$Nursery),nrow)
+colnames(Nursery_count)<-c("State","Y/N","NurseryCount")
+NURSERY_count<-Nursery_count[order(Nursery_count$State),]
+NURSERY_count<-NURSERY_count%>% filter(NURSERY_count$`Y/N` != 0)
+Nuts_count<-ddply(All_Products,.(All_Products$State,All_Products$Nuts),nrow)
+colnames(Nuts_count)<-c("State","Y/N","NutsCount")
+NUTS_count<-Nuts_count[order(Nuts_count$State),]
+NUTS_count<-NUTS_count%>% filter(NUTS_count$`Y/N` != 0)
+Plants_count<-ddply(All_Products,.(All_Products$State,All_Products$Plants),nrow)
+colnames(Plants_count)<-c("State","Y/N","PlantsCount")
+PLANTS_count<-Plants_count[order(Plants_count$State),]
+PLANTS_count<-PLANTS_count%>% filter(PLANTS_count$`Y/N` != 0)
+Poultry_count<-ddply(All_Products,.(All_Products$State,All_Products$Poultry),nrow)
+colnames(Poultry_count)<-c("State","Y/N","PoultryCount")
+POULTRY_count<-Poultry_count[order(Poultry_count$State),]
+POULTRY_count<-POULTRY_count%>% filter(POULTRY_count$`Y/N` != 0)
+Prepared_count<-ddply(All_Products,.(All_Products$State,All_Products$Prepared),nrow)
+colnames(Prepared_count)<-c("State","Y/N","PreparedCount")
+PREPARED_count<-Prepared_count[order(Prepared_count$State),]
+PREPARED_count<-PREPARED_count%>% filter(PREPARED_count$`Y/N` != 0)
+Soap_count<-ddply(All_Products,.(All_Products$State,All_Products$Soap),nrow)
+colnames(Soap_count)<-c("State","Y/N","SoapCount")
+SOAP_count<-Soap_count[order(Soap_count$State),]
+SOAP_count<-SOAP_count%>% filter(SOAP_count$`Y/N` != 0)
+Trees_count<-ddply(All_Products,.(All_Products$State,All_Products$Trees),nrow)
+colnames(Trees_count)<-c("State","Y/N","TreesCount")
+TREES_count<-Trees_count[order(Trees_count$State),]
+TREES_count<-TREES_count%>% filter(TREES_count$`Y/N` != 0)
+Wine_count<-ddply(All_Products,.(All_Products$State,All_Products$Wine),nrow)
+colnames(Wine_count)<-c("State","Y/N","WineCount")
+WINE_count<-Wine_count[order(Wine_count$State),]
+WINE_count<-WINE_count%>% filter(WINE_count$`Y/N` != 0)
+Coffee_count<-ddply(All_Products,.(All_Products$State,All_Products$Coffee),nrow)
+colnames(Coffee_count)<-c("State","Y/N","CoffeeCount")
+COFFEE_count<-Coffee_count[order(Coffee_count$State),]
+COFFEE_count<-COFFEE_count%>% filter(COFFEE_count$`Y/N` != 0)
+```
+```{r}
+#HW 5
+Beans_count<-ddply(All_Products,.(All_Products$State,All_Products$Beans),nrow)
+colnames(Beans_count)<-c("State","Y/N","BeanCount")
+BEANS_count<-Beans_count[order(Beans_count$State),]
+BEANS_count<-BEANS_count%>% filter(BEANS_count$`Y/N` != 0)
+Fruits_count<-ddply(All_Products,.(All_Products$State,All_Products$Fruits),nrow)
+colnames(Fruits_count)<-c("State","Y/N","FruitsCount")
+FRUITS_count<-Fruits_count[order(Fruits_count$State),]
+FRUITS_count<-FRUITS_count%>% filter(FRUITS_count$`Y/N` != 0)
+Grains_count<-ddply(All_Products,.(All_Products$State,All_Products$Grains),nrow)
+colnames(Grains_count)<-c("State","Y/N","GrainsCount")
+GRAINS_count<-Grains_count[order(Grains_count$State),]
+GRAINS_count<-GRAINS_count%>% filter(GRAINS_count$`Y/N` != 0)
+Juices_count<-ddply(All_Products,.(All_Products$State,All_Products$Juices),nrow)
+colnames(Juices_count)<-c("State","Y/N","JuicesCount")
+JUICES_count<-Juices_count[order(Juices_count$State),]
+JUICES_count<-JUICES_count%>% filter(JUICES_count$`Y/N` != 0)
+Mushrooms_count<-ddply(All_Products,.(All_Products$State,All_Products$Mushrooms),nrow)
+colnames(Mushrooms_count)<-c("State","Y/N","MushroomsCount")
+MUSHROOMS_count<-Mushrooms_count[order(Mushrooms_count$State),]
+MUSHROOMS_count<-MUSHROOMS_count%>% filter(MUSHROOMS_count$`Y/N` != 0)
+PetFood_count<-ddply(All_Products,.(All_Products$State,All_Products$PetFood),nrow)
+colnames(PetFood_count)<-c("State","Y/N","PetFoodCount")
+PETFOOD_count<-PetFood_count[order(PetFood_count$State),]
+PETFOOD_count<-PETFOOD_count%>% filter(PETFOOD_count$`Y/N` != 0)
+Tofu_count<-ddply(All_Products,.(All_Products$State,All_Products$Tofu),nrow)
+colnames(Tofu_count)<-c("State","Y/N","TofuCount")
+TOFU_count<-Tofu_count[order(Tofu_count$State),]
+TOFU_count<-TOFU_count%>% filter(TOFU_count$`Y/N` != 0)
+WildHarv_count<-ddply(All_Products,.(All_Products$State,All_Products$WildHarvested),nrow)
+colnames(WildHarv_count)<-c("State","Y/N","WildHarvestedCount")
+WILDHARV_count<-WildHarv_count[order(WildHarv_count$State),]
+WILDHARV_count<-WILDHARV_count%>% filter(WILDHARV_count$`Y/N` != 0)
+#FINAL  CLEANING
+
+PREPARED_SEAFOOD<-merge(PREPARED_count,SEAFOOD_count,all = TRUE)
+PREP_SEA_MAPLE<-merge(PREPARED_SEAFOOD,MAPLE_count,all=TRUE)
+PREP_SEA_MAP_MEAT<-merge(PREP_SEA_MAPLE,MEAT_count,all=TRUE)
+PREP_SEA_MAP_MEA_NURSERY<-merge(PREP_SEA_MAP_MEAT,NURSERY_count,all=TRUE)
+PSMMNN<-merge(PREP_SEA_MAP_MEA_NURSERY,NUTS_count,all=TRUE)
+PSMMNNP<-merge(PSMMNN,POULTRY_count,all=TRUE)
+PSMMNNPT<-merge(PSMMNNP,TREES_count,all=TRUE)
+PSMMNNPTW<-merge(PSMMNNPT,WINE_count,all=TRUE)
+
+
+
+```
+```{r}
+#combined <- rbind.fill(mtcars[c("mpg", "wt")], mtcars[c("wt", "cyl")])
+#PRODUCTS_TABLE2<-cbind(BEANS_count,FRUITS_count,GRAINS_count,JUICES_count,MUSHROOMS_count,PETFOOD_count,TOFU_count,WILDHARV_count)
+```
+```{r}
+#COMPLETE TABLE
+
+PRODUCTS_TABLE<-cbind(ORGANIC_count,BAKED_count,CHEESE_count,CRAFTS_count,FLOWERS_count,EGGS_count,HERBS_count,VEGS_count,HONEY_count,JAM_count,PLANTS_count,PREPARED_count,SOAP_count,COFFEE_count,PSMMNNPTW)
+PRODUCTS_TABLE<-PRODUCTS_TABLE[,-c(2,4,5,7,8,10,11,13,14,16,17,19,20,22,23,25,26,28,29,31,32,34,35,37,38,40,41,43,44)]
+PRODUCTS_TABLE$PreparedCount.1<-NULL
+PRODUCTS_TABLE[is.na(PRODUCTS_TABLE)]<-0
+PRODUCTS_TABLE2<-PRODUCTS_TABLE
+PRODUCTS_TABLE3<-PRODUCTS_TABLE[,2:23]
+PRODUCTS_TABLE2$Max<-colnames(PRODUCTS_TABLE)[apply(PRODUCTS_TABLE,1,which.max)]
+PRODUCTS_TABLE$MaxValue<-apply(X=PRODUCTS_TABLE, MARGIN=1, FUN=max)
+PRODUCTS_TABLE2$Min<-colnames(PRODUCTS_TABLE)[apply(PRODUCTS_TABLE,1,which.min)]
+
+PRODUCTS_TABLE3$MaxValue<-apply(X=PRODUCTS_TABLE3, MARGIN=1, FUN=max)
+PRODUCTS_TABLE3$MinValue<-apply(X=PRODUCTS_TABLE3, MARGIN=1, FUN=min)
+PRODUCTS_TABLE2<-cbind(PRODUCTS_TABLE2,PRODUCTS_TABLE3$MaxValue,PRODUCTS_TABLE3$MinValue)
+colnames(PRODUCTS_TABLE2)<-c("States","Organic","Baked","Cheese","Crafts","Flowers","Eggs","Herbs","Veg","Honey","Jam","Plants","Prepared","Soap","Coffee","Seafood","Maple","Meat","Nursery","Nuts","Poultry","Trees","Wine","Max","Min","MaxValue","MinValue")
+PRODUCTPLOT<-PRODUCTS_TABLE2[1:5,]
+PRODUCTPLOT1<-as.data.frame(PRODUCTPLOT)
+PRODUCTPLOT1<-data.frame(lapply(PRODUCTPLOT1,function(x){gsub("VegCount","Veg",x)}))
+PRODUCTPLOT1<-data.frame(lapply(PRODUCTPLOT1,function(x){gsub("NurseryCount","Nursery",x)}))
+PRODUCTPLOT1<-data.frame(lapply(PRODUCTPLOT1,function(x){gsub("MapleCount","Maple",x)}))
+PRODUCTPLOT1<-data.frame(lapply(PRODUCTPLOT1,function(x){gsub("WineCount","Wine",x)}))
+a<-ggplot(PRODUCTPLOT1,aes(x=States,y=reorder(PRODUCTPLOT1$`MaxValue`,States)))+geom_bar(stat = "identity",fill="light blue")+geom_text(aes(label=PRODUCTPLOT1$Max),hjust=0.4,vjust=0)+ylab("Max Product Count")+xlab("States")+ggtitle("Maximum Product in 5 States")+coord_flip()
+b<-ggplot(PRODUCTPLOT1,aes(x=reorder(States,-PRODUCTPLOT1$`MinValue`),y=PRODUCTPLOT1$`MinValue`))+geom_bar(stat = "identity",fill="yellowgreen")+geom_text(aes(label=PRODUCTPLOT1$Min),hjust=0,vjust=0)+ylab("Min Product Count")+xlab("States")+ggtitle("Minimum Product in 5 States")+coord_flip()
+library(cowplot)
+plot_grid(a,b,labels="AUTO")
+```
+
+```{r}
+#PLOTTING
+#ORGANIC PLOT
+
+library(ggplot2)
+library(png)
+library(grid)
+library(ggimage)
+require(ggimage)
+orgplot<-ORGANIC_count
+orgplotcount<-orgplot[order(-orgplot$OrganicCount),]
+ORGPLOT<-head(orgplotcount,4)
+ORGPLOT<-ORGPLOT[,-2]
+
+ORGPLOT$images<-"images/organic-logo.png"
+orgplot<-ggplot(ORGPLOT,aes(x=reorder(State,-OrganicCount),y=OrganicCount))+geom_line(aes(group=1))+geom_image(aes(image=images),size=0.09)+xlab("State")+ylab("Number of Markets with Organic")+ggtitle("Top 4 States For Organic")
+```
+```{r}
+#BAKED PLOT
+library(cowplot)
+bakedplot<-BAKED_count
+bakplotcount<-bakedplot[order(-bakedplot$BakedCount),]
+BAKEDPLOT<-head(bakplotcount,4)
+BAKEDLOT<-BAKEDPLOT[,-2]
+BAKEDPLOT$images<-"images/baked-logo.png"
+bakplot<-ggplot(BAKEDPLOT,aes(x=reorder(State,-BakedCount),y=BakedCount))+geom_line(aes(group=1))+geom_image(aes(image=images),size=0.15)+xlab("States")+ylab("Number of Markets with Baked")+ggtitle("Top 4 States For Baked")
+plot_grid(orgplot,bakplot,labels="AUTO")
+```
+```{r}
+#Common Products Plot
+#CHEESE plot
+library(ggplot2)
+library(png)
+library(grid)
+library(ggimage)
+require(ggimage)
+
+cheeseplot<-CHEESE_count
+cheeseplotcount<-cheeseplot[order(-cheeseplot$CheeseCount),]
+CHEESE<-head(cheeseplotcount,4)
+CHEESE<-CHEESE[,-2]
+CHEESE$images<-"images/cheese.png.png"
+
+CHEESEplot<-ggplot(CHEESE,aes(x=reorder(State,-CheeseCount),y=CheeseCount))+geom_line(aes(group=1))+geom_image(aes(image=images),size=0.09)+xlab("States")+ylab("Markets with Cheese")+ggtitle("Top 4 States For Cheese")+theme(plot.title = element_text(hjust = 0.5))
+#EGG plot
+eggplot<-EGGS_count
+eggplotcount<-eggplot[order(-eggplot$EggsCount),]
+EGG<-head(eggplotcount,4)
+EGG<-EGG[,-2]
+
+EGG$images<-"images/egg.png"
+EGGplot<-ggplot(EGG,aes(x=reorder(State,-EggsCount),y=EggsCount))+geom_line(aes(group=1))+geom_image(aes(image=images),size=0.09)+xlab("States")+ylab("Markets with Eggs")+ggtitle("Top 4 States For Eggs")
+#HONEY plot
+honeyplot<-HONEY_count
+honeyplotcount<-honeyplot[order(-honeyplot$HoneyCount),]
+HONEY<-head(honeyplotcount,4)
+HONEY<-HONEY[,-2]
+
+HONEY$images<-"images/honey.png"
+HONEYplot<-ggplot(HONEY,aes(x=reorder(State,-HoneyCount),y=HoneyCount))+geom_line(aes(group=1))+geom_image(aes(image=images),size=0.09)+xlab("States")+ylab("Markets with Honey")+theme(plot.title = element_text(hjust = 0.5))+ggtitle("Top 4 States For Honey")
+plot_grid(CHEESEplot,EGGplot,HONEYplot,labels="AUTO")
+```
+```{r}
+#JAM plot
+jamplot<-JAM_count
+jamplotcount<-jamplot[order(-jamplot$JamCount),]
+JAM<-head(jamplotcount,4)
+JAM<-JAM[,-2]
+JAM$images<-"images/jam.png"
+Jamplot<-ggplot(JAM,aes(x=reorder(State,-JamCount),y=JamCount))+geom_line(aes(group=1))+geom_image(aes(image=images),size=0.09)+xlab("States")+ylab("Markets with Jam")+ggtitle("Top 4 States For Jam")
+#NUTS plot
+nutplot<-NUTS_count
+nutplotcount<-nutplot[order(-nutplot$NutsCount),]
+NUTS<-head(nutplotcount,4)
+NUTS<-NUTS[,-2]
+NUTS$images<-"images/nuts.png"
+NUTSplot<-ggplot(NUTS,aes(x=reorder(State,-NutsCount),y=NutsCount))+geom_line(aes(group=1))+geom_image(aes(image=images),size=0.09)+xlab("States")+ylab("Markets with Nuts")+ggtitle("Top 4 States For Nuts")
+
+#COFFEE plot
+coffeeplot<-COFFEE_count
+coffeeplotcount<-coffeeplot[order(-coffeeplot$CoffeeCount),]
+COFFEE<-head(coffeeplotcount,4)
+COFFEE<-COFFEE[,-2]
+
+COFFEE$images<-"images/coffee.png"
+COFFEEplot<-ggplot(COFFEE,aes(x=reorder(State,-CoffeeCount),y=CoffeeCount))+geom_line(aes(group=1))+geom_image(aes(image=images),size=0.09)+xlab("States")+ylab("Markets with Coffee")+ggtitle("Top 4 States For Nuts")
+plot_grid(Jamplot,NUTSplot,COFFEEplot,labels="AUTO")
+```
+```{r}
+productnames<-colnames(PRODUCTS_TABLE[,2:23])
+Org<-sum(PRODUCTS_TABLE$OrganicCount)
+Bake<-sum(PRODUCTS_TABLE$BakedCount)
+Cheese<-sum(PRODUCTS_TABLE$CheeseCount)
+Crafts<-sum(PRODUCTS_TABLE$CraftsCount)
+Flowers<-sum(PRODUCTS_TABLE$FlowersCount)
+Eggs<-sum(PRODUCTS_TABLE$EggsCount)
+Herbs<-sum(PRODUCTS_TABLE$HerbsCount)
+Veg<-sum(PRODUCTS_TABLE$VegCount)
+Honey<-sum(PRODUCTS_TABLE$HoneyCount)
+Jam<-sum(PRODUCTS_TABLE$JamCount)
+Plants<-sum(PRODUCTS_TABLE$PlantsCount)
+Poultry<-sum(PRODUCTS_TABLE$PoultryCount)
+Prepared<-sum(PRODUCTS_TABLE$PreparedCount)
+Soap<-sum(PRODUCTS_TABLE$SoapCount)
+Seafood<-sum(PRODUCTS_TABLE$SeafoodCount)
+Coffee<-sum(PRODUCTS_TABLE$CoffeeCount)
+Meat<-sum(PRODUCTS_TABLE$MeatCount)
+Maple<-sum(PRODUCTS_TABLE$MapleCount)
+Nursery<-sum(PRODUCTS_TABLE$NurseryCount)
+Nuts<-sum(PRODUCTS_TABLE$NutsCount)
+Tree<-sum(PRODUCTS_TABLE$TreesCount)
+Wine<-sum(PRODUCTS_TABLE$WineCount)
+Totalcount<-as.data.frame(c(Org,Bake,Cheese,Crafts,Flowers,Eggs,Herbs,Veg,Honey,Jam,Plants,Prepared,Soap,Coffee,Seafood,Maple,Meat,Nursery,Nuts,Poultry,Tree,Wine))
+ALLCOUNT<-cbind(productnames,Totalcount)
+colnames(ALLCOUNT)<-c("Products","Count")
+ALLCOUNT<-data.frame(lapply(ALLCOUNT,function(x){gsub("Count","",x)}))
+ALLCOUNT1<-head(ALLCOUNT,11)
+ALLCOUNT1$Products<-factor(ALLCOUNT1$Products,levels = ALLCOUNT1$Products[order(ALLCOUNT1$Count)])
+ALLCOUNT2<-tail(ALLCOUNT,11)
+ALLCOUNT2$Products<-factor(ALLCOUNT2$Products,levels = ALLCOUNT2$Products[order(ALLCOUNT2$Count)])
+ALLCOUNT1$Color<-c("Org","Baked","Cheese","Crafts","Flower","Eggs","Herbs","Veg","Honey","Jam","Plants")
+ALLCOUNT2$Color<-c("Prepared","Soap","Coffee","Seafood","Maple","Meat","Nursery","Nuts","Poultry","Trees","Wine")
+ALLCOUNT1plot<-ggplot(ALLCOUNT1,aes(x=Products,y=factor(Count)))+geom_line(aes(group=1))+geom_point(aes(color=Color),size=1.5)+coord_flip()+ggtitle("Count of Few Products")+ylab("Count")+theme(plot.title = element_text(hjust = 0.5))
+ALLCOUNT2plot<-ggplot(ALLCOUNT2,aes(x=Products,y=Count))+geom_line(aes(group=1))+geom_point(aes(color=Color),size=1.5)+coord_flip()+ggtitle("Count of Few Products")+ylab("Count")+theme(plot.title = element_text(hjust = 0.5))
+plot(ALLCOUNT1plot)
+```
+```{r}
+plot(ALLCOUNT2plot)
+```
+```{r}
+ALLCOUNT$Color<-c("Org","Baked","Cheese","Crafts","Flower","Eggs","Herbs","Veg","Honey","Jam","Plants","Prepared","Soap","Coffee","Seafood","Maple","Meat","Nursery","Nuts","Poultry","Trees","Wine")
+ALLCOUNT$Count<-as.numeric(as.character(ALLCOUNT$Count))
+ALLCOUNTplot<-ggplot(ALLCOUNT,aes(x=Products,y=Count))+geom_line(aes(group=1))+geom_point(aes(color=Color),size=1.5)+ggtitle("Count of All Products")+ylab("Count")+theme(plot.title = element_text(hjust = 0.5))+theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+plot(ALLCOUNTplot)
+```
+
+```{r}
+#CALIFORNIA PLOT
+CaliPRoduct<-PRODUCTS_TABLE[5,]
+calimelt<-melt(CaliPRoduct)
+ggplot(calimelt,aes(x=reorder(variable,value),y=value))+geom_bar(stat  ="identity")+coord_flip()+xlab("Products")
+
+```
+Question 4
+```{r}
+library(ggplot2)
+library(png)
+library(grid)
+library(ggimage)
+Payment<-select(Market,Credit,WIC,WICcash,SFMNP,SNAP)
+Payment[is.na(Payment)] <- 0
+Payment<-data.frame(lapply(Payment,function(x){gsub("N","0",x)}))
+All_Payments<-cbind(Statespresent,Payment)
+Credit_count<-ddply(All_Payments,.(All_Payments$State,All_Payments$Credit),nrow)
+colnames(Credit_count)<-c("State","CreditY/N","CreditCount")
+CREDIT_count<-Credit_count[order(Credit_count$State),]
+CREDIT_count <- CREDIT_count%>% filter(CREDIT_count$`CreditY/N` != 0)
+Wic_count<-ddply(All_Payments,.(All_Payments$State,All_Payments$WIC),nrow)
+colnames(Wic_count)<-c("State","WIC Y/N","WICCount")
+WIC_count <- Wic_count%>% filter(Wic_count$`WIC Y/N` != 0)
+Wiccash_count<-ddply(All_Payments,.(All_Payments$State,All_Payments$WICcash),nrow)
+colnames(Wiccash_count)<-c("State","WICCASH Y/N","WICCASHCount")
+WICCASH_count<-Wiccash_count[order(Wiccash_count$State),]
+WICCASH_count <- WICCASH_count%>% filter(WICCASH_count$`WICCASH Y/N` != 0)
+sfmnp_count<-ddply(All_Payments,.(All_Payments$State,All_Payments$SFMNP),nrow)
+colnames(sfmnp_count)<-c("State","SFMNP Y/N","SFMNPCount")
+SFMNP_count<-sfmnp_count[order(sfmnp_count$State),]
+SFMNP_count <- SFMNP_count%>% filter(SFMNP_count$`SFMNP Y/N` != 0)
+snap_count<-ddply(All_Payments,.(All_Payments$State,All_Payments$SNAP),nrow)
+colnames(snap_count)<-c("State","SNAP Y/N"," SNAPCount")
+SNAP_count<-snap_count[order(snap_count$State),]
+SNAP_count <-SNAP_count%>% filter(SNAP_count$`SNAP Y/N` != 0)
+#TOTAL_PAYMENT<-merge(Ordered_states_present,CREDIT_count,WIC_count,WICCASH_count,SFMNP_count,SNAP_count)
+TOTAL_PAYMENT<- merge(CREDIT_count,WIC_count, all = TRUE)
+#TOTAL_PAYMENT[is.na(TOTAL_PAYMENT)] <- 0
+#columns in df2 not in df1
+unique_WIC_names <- setdiff(names(WIC_count), names(CREDIT_count))
+TOTAL_PAYMENT[unique_WIC_names][is.na(TOTAL_PAYMENT[, unique_WIC_names])] <- 0
+TOTAL_PAYMENT2<-merge(SFMNP_count,WICCASH_count,all = TRUE)
+unique_WICCASH_names <- setdiff(names(WICCASH_count), names(SFMNP_count))
+TOTAL_PAYMENT2[unique_WICCASH_names][is.na(TOTAL_PAYMENT2[, unique_WICCASH_names])] <- 0 
+TOTAL_PAYMENT3<-merge(SFMNP_count,SNAP_count,all = TRUE)
+unique_SNAP_names <- setdiff(names(SNAP_count), names(SFMNP_count))
+TOTAL_PAYMENT3[unique_SNAP_names][is.na(TOTAL_PAYMENT3[, unique_SNAP_names])] <- 0 
+PAYMENT1<-merge(TOTAL_PAYMENT,TOTAL_PAYMENT2,all = TRUE)
+unique_TOTAL2_names <- setdiff(names(TOTAL_PAYMENT2), names(TOTAL_PAYMENT))
+PAYMENT1[unique_TOTAL2_names][is.na(PAYMENT1[, unique_TOTAL2_names])] <- 0 
+PAYMENT<-merge(PAYMENT1,TOTAL_PAYMENT3,all = TRUE)
+unique_TOTAL3_names <- setdiff(names(TOTAL_PAYMENT3), names(PAYMENT1))
+PAYMENT[unique_TOTAL3_names][is.na(PAYMENT[, unique_TOTAL3_names])] <- 0 
+PAYMENT[13,11]<-PAYMENT[14,11]
+PAYMENT[36,11]<-PAYMENT[37,11]
+PAYMENT<-PAYMENT[-c(14,37),]
+PAYMENT<-PAYMENT[,-c(2,4,6,8,10)]
+#PAYMENT$max <- apply(PAYMENT,1,max)
+PAYMENT$max <-colnames(PAYMENT)[apply(PAYMENT,1,which.max)]
+PAYMENT$min<-colnames(PAYMENT)[apply(PAYMENT,1,which.min)]
+SOME_PAYMENT<-head(PAYMENT,5)
+LL_Images=data.frame(images=list.files("Macintosh HD/Users/loshinilavanya/Destop/images",full.names = T),stringsAsFactors = F)
+
+
+```
+
+```{r}
+#CREDIT GRAPH
+CREDIT2_count<-CREDIT_count[order(CREDIT_count$CreditCount),]
+CREDIT3<-tail(CREDIT2_count,6)
+library(ggplot2)
+library(png)
+library(grid)
+library(ggimage)
+require(ggimage)
+
+image_path2<-"images/moneypayment.png"
+m<-readPNG(image_path2,native = TRUE,info = TRUE)
+
+CREDIT3$images<-"images/credit.png"
+creditplot<-ggplot(CREDIT3,aes(x=reorder(State,-CreditCount),y=CreditCount))+annotation_custom(rasterGrob(m,width=unit(1,"npc"),height=unit(1,"npc")),-Inf,Inf,-Inf,Inf)+geom_line(aes(group=1))+geom_image(aes(image=images),size=0.07)+xlab("States")+ylab("Markets Using Credit")+ggtitle("Top States Using Credit")+theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+
+```
+```{r}
+#WIC BARGRAPH
+WIC2_count<-WIC_count[order(WIC_count$WICCount),]
+WIC3<-tail(WIC2_count,5)
+library(ggplot2)
+library(png)
+library(grid)
+library(ggimage)
+WIC3$States<-c("NY","CA","MA","MI","WI")
+
+
+
+ggplot(WIC3,aes(x=reorder(State,-WICCount),y=WICCount,fill=States))+geom_bar(stat="identity")+xlab("States")+ylab("Markets Using WIC")+ggtitle("Top 5 States Using WIC")
+
+
+```
+
+```{r}
+#WIC POINT PLOT
+library(ggplot2)
+library(png)
+library(grid)
+library(ggimage)
+#WIC3$States<-c("NY","CA","MA","MI","WI","WA")
+WIC3$images<-"images/WIC.png"
+wicplot<-ggplot(WIC3,aes(x=reorder(State,-WICCount),y=WICCount))+annotation_custom(rasterGrob(m,width=unit(1,"npc"),height=unit(1,"npc")),-Inf,Inf,-Inf,Inf)+geom_line(aes(group=1))+geom_image(aes(image=images),size=0.07)+xlab("States")+ylab("Markets Using WIC")+ggtitle("Top 5 States Using WIC")+theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+library(cowplot)
+plot_grid(creditplot,wicplot,labels="AUTO")
+```
+```{r}
+WICCASH2_count<-WICCASH_count[order(WICCASH_count$`WICCASHCount`),]
+WICCASH3<-tail(WICCASH2_count,6)
+library(ggplot2)
+library(png)
+library(grid)
+library(ggimage)
+image_path3<-"images/moneypayment.png"
+m<-readPNG(image_path3,native = TRUE,info = TRUE)
+ggplot(WICCASH3,aes(x=reorder(State,-WICCASHCount),y=WICCASHCount))+annotation_custom(rasterGrob(m,width=unit(1,"npc"),height=unit(1,"npc")),-Inf,Inf,-Inf,Inf)+geom_line(aes(group=1))+geom_jitter(size=1.5,color="tomato")+xlab("States")+ylab("Markets Using WICCASH")+ggtitle("Top 5 States Using WICCASH")+theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+
+
+```
+```{r}
+library(ggplot2)
+library(png)
+library(grid)
+library(ggimage)
+SFMNP2_count<-SFMNP_count[order(SFMNP_count$`SFMNPCount`),]
+SFMNP3<-tail(SFMNP2_count,6)
+image_path3<-"images/moneypayment.png"
+m<-readPNG(image_path3,native = TRUE,info = TRUE)
+sfmnpplot<-ggplot(SFMNP3,aes(x=reorder(State,-SFMNPCount),y=SFMNPCount))+annotation_custom(rasterGrob(m,width=unit(1,"npc"),height=unit(1,"npc")),-Inf,Inf,-Inf,Inf)+geom_line(aes(group=1))+geom_line(aes(group=1))+geom_jitter(color="green")+xlab("States")+ylab("Markets Using SFMNP")+ggtitle("Top 5 States Using SFMNP")+theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+
+
+```
+```{r}
+library(ggplot2)
+library(png)
+library(grid)
+library(ggimage)
+library(cowplot)
+SNAP2_count<-SNAP_count[order(SNAP_count$` SNAPCount`),]
+SNAP3<-tail(SNAP2_count,6)
+image_path3<-"images/moneypayment.png"
+m<-readPNG(image_path3,native = TRUE,info = TRUE)
+snapplot<-ggplot(SNAP3,aes(x=reorder(State,-SNAP3$` SNAPCount`),y=SNAP3$` SNAPCount`))+annotation_custom(rasterGrob(m,width=unit(1,"npc"),height=unit(1,"npc")),-Inf,Inf,-Inf,Inf)+geom_line(aes(group=1))+geom_jitter(color="purple")+xlab("States")+ylab("Markets Using SNAP")+ggtitle("Top 5 States Using SNAP")+theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+plot(snapplot)
+```                                                                                                                                                                                                                                   
+#QUESTION 5
+```{r}
+#Top 3 states with most number of markets
+MostMarkets<-New_df[1:3,c(1,2,3,5)]
+colnames(MostMarkets)<-c("StateAb","State","MarketCount","StateColor")
+LowestMarkets<-tail(New_df3,3)
+colnames(LowestMarkets)<-c("StateAb","State","MarketCount")
+#CALIFORNIA PLOT
+CaliProduct<-PRODUCTS_TABLE[5,]
+CALIProduct<-CaliProduct[,c(1,9,16,18)]
+calimelt<-melt(CALIProduct)
+CaliProductPlot<-ggplot(calimelt,aes(x=reorder(variable,value),y=value))+geom_bar(stat  ="identity")+coord_flip()+xlab("Products")+ggtitle("California Products Count")
+#NEW YORK PLOT
+nyProduct<-PRODUCTS_TABLE[33,]
+NYProduct<-nyProduct[,c(1,9,16,18)]
+NYmelt<-melt(NYProduct)
+NYProductPlot<-ggplot(NYmelt,aes(x=reorder(variable,value),y=value))+geom_bar(stat  ="identity")+coord_flip()+xlab("Products")+ggtitle("New York Products Count")
+
+#MICHIGAN PLOT
+miProduct<-PRODUCTS_TABLE[23,]
+MIProduct<-miProduct[,c(1,9,16,18)]
+MImelt<-melt(MIProduct)
+MIProductPlot<-ggplot(MImelt,aes(x=reorder(variable,value),y=value))+geom_bar(stat  ="identity")+coord_flip()+xlab("Products")+ggtitle("Michigan Products Count")
+plot(MIProductPlot)
+mp<-plot_grid(CaliProductPlot,NYProductPlot,MIProductPlot,Labels="AUTO")
+#3 States with Lowest Number of Markets
+#ALASKA PLOT
+akProduct<-PRODUCTS_TABLE[2,]
+AKProduct<-akProduct[,c(1,9,16,18)]
+AKmelt<-melt(AKProduct)
+AKmelt<-data.frame(lapply(AKmelt,function(x){gsub("Alaska","AL",x)}))
+AKProductPlot<-ggplot(AKmelt,aes(x=reorder(variable,value),y=value))+geom_bar(stat  ="identity")+coord_flip()+xlab("Products")+ggtitle("Alaska Products Count")
+plot(AKProductPlot)
+
+#DELAWARE Plot
+deProduct<-PRODUCTS_TABLE[8,]
+DEProduct<-deProduct[,c(1,9,16,18)]
+DEmelt<-melt(DEProduct)
+DEmelt<-data.frame(lapply(DEmelt,function(x){gsub("Delaware","DE",x)}))
+DEProductPlot<-ggplot(DEmelt,aes(x=reorder(variable,value),y=value))+geom_bar(stat  ="identity")+coord_flip()+xlab("Products")+ggtitle("Delaware Products Count")
+plot(DEProductPlot)
+
+#RHODE ISLAND Plot
+riProduct<-PRODUCTS_TABLE[2,]
+RIProduct<-riProduct[,c(1,9,16,18)]
+RImelt<-melt(RIProduct)
+RImelt<-data.frame(lapply(RImelt,function(x){gsub("Rhode Island","RI",x)}))
+RIProductPlot<-ggplot(RImelt,aes(x=reorder(variable,value),y=value))+geom_bar(stat="identity")+coord_flip()+xlab("Products")+ggtitle("Rhode Island Products Count")
+
+lp<-plot_grid(AKProductPlot,DEProductPlot,RIProductPlot,labels = "AUTO")
+plot(lp)
+
+```
